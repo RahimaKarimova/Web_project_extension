@@ -32,6 +32,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
   document.getElementById('file-input').addEventListener('change', importData);
   document.getElementById('extract-data').addEventListener('click', extractData); // Event listener
+  document.getElementById('send-email').addEventListener('click', sendEmail);
 });
 
 // Function to add a custom field to the popup
@@ -493,3 +494,36 @@ function populateDataFields(data) {
     });
   }
 }
+
+function sendEmail() {
+  chrome.storage.local.get(['profiles'], (result) => {
+    const profilesData = result.profiles || [];
+    const jsonData = JSON.stringify(profilesData, null, 2);
+
+    // Create a Blob and file URL for the JSON data
+    const blob = new Blob([jsonData], { type: 'application/json' });
+    const fileUrl = URL.createObjectURL(blob);
+
+    // Automatically download the JSON file
+    const downloadLink = document.createElement('a');
+    downloadLink.href = fileUrl;
+    downloadLink.download = 'profiles.json';
+    document.body.appendChild(downloadLink);
+    downloadLink.click();
+    document.body.removeChild(downloadLink);
+
+    // Prefill an email with instructions to attach the downloaded file
+    const subject = encodeURIComponent('Exported Profile Data');
+    const body = encodeURIComponent(
+      `Attached is the exported profile data from the Supreme Auto Filler extension.\n\nPlease attach the downloaded file "profiles.json" to this email before sending.`
+    );
+
+    // Open the user's email client
+    const mailtoLink = `mailto:?subject=${subject}&body=${body}`;
+    window.location.href = mailtoLink;
+
+    // Revoke the Blob URL after a short delay
+    setTimeout(() => URL.revokeObjectURL(fileUrl), 1000);
+  });
+}
+
