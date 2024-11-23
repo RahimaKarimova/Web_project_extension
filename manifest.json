@@ -1,0 +1,17 @@
+{
+  "manifest_version": 3,
+  "name": "Supreme Auto Filler",
+  "version": "1.0",
+  "description": "An extension to auto-fill forms and extract data.",
+  "permissions": [
+    "scripting",
+    "activeTab",
+    "storage"
+  ],
+  "host_permissions": [
+    "*://*/*"
+  ],
+  "action": {
+    "default_popup": "popup.html"
+  }
+}
