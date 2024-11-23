@@ -8,6 +8,7 @@ let customFields = [];
 
 // Load profiles when the popup is opened
 document.addEventListener('DOMContentLoaded', () => {
+
   loadProfiles();
 
   // Event listeners for buttons and inputs
@@ -144,18 +145,53 @@ function formatSkills(skills) {
 
 // Function to create a new profile
 function createNewProfile() {
-  const profileName = prompt('Enter a name for the new profile:');
-  if (profileName) {
-    profiles.push({
-      profileName: profileName,
-      data: {}
-    });
-    selectedProfileIndex = profiles.length - 1;
-    chrome.storage.local.set({ profiles: profiles }, () => {
-      populateProfileDropdown();
-      loadSelectedProfileData();
-    });
-  }
+  // Get modal-related elements
+  const newProfileModal = document.getElementById('new-profile-modal');
+  const saveNewProfileButton = document.getElementById('save-new-profile');
+  const cancelNewProfileButton = document.getElementById('cancel-new-profile');
+  const newProfileNameInput = document.getElementById('new-profile-name');
+
+  // Show modal when "New Profile" button is clicked
+  newProfileModal.style.display = 'flex';
+
+  // Event listener for saving the new profile
+  const saveProfile = () => {
+    const profileName = newProfileNameInput.value.trim();
+    if (profileName) {
+      // Add the new profile logic here
+      profiles.push({
+        profileName: profileName,
+        data: {}
+      });
+      selectedProfileIndex = profiles.length - 1;
+      chrome.storage.local.set({ profiles: profiles }, () => {
+        populateProfileDropdown();
+        loadSelectedProfileData();
+        showMessage('Profile created successfully!');
+      });
+    }
+    // Clear the input and hide the modal
+    newProfileNameInput.value = '';
+    newProfileModal.style.display = 'none';
+
+    // Clean up event listeners to avoid duplicate listeners
+    saveNewProfileButton.removeEventListener('click', saveProfile);
+    cancelNewProfileButton.removeEventListener('click', cancelProfileCreation);
+  };
+
+  // Event listener for canceling the new profile creation
+  const cancelProfileCreation = () => {
+    newProfileModal.style.display = 'none';
+    newProfileNameInput.value = ''; // Clear the input
+
+    // Clean up event listeners to avoid duplicate listeners
+    saveNewProfileButton.removeEventListener('click', saveProfile);
+    cancelNewProfileButton.removeEventListener('click', cancelProfileCreation);
+  };
+
+  // Attach the listeners
+  saveNewProfileButton.addEventListener('click', saveProfile);
+  cancelNewProfileButton.addEventListener('click', cancelProfileCreation);
 }
 
 // Function to delete the selected profile

@@ -2,13 +2,14 @@
 
 <!DOCTYPE html>
 <html>
+
 <head>
-  <title>Supreme Auto Filler</title>
+  <title>Chrome Auto Filler</title>
   <link rel="stylesheet" href="styles/popup.css">
 </head>
-<body>
-  <h1>Supreme Auto Filler</h1>
 
+<body>
+  <h1>Chrome Auto Filler</h1>
   <!-- Profile Selection -->
   <div class="section">
     <label for="profile-select">Select Profile:</label>
@@ -16,6 +17,18 @@
       <select id="profile-select"></select>
       <button id="new-profile">New</button>
       <button id="delete-profile">Delete</button>
+    </div>
+  </div>
+
+  <div id="new-profile-modal" class="modal" style="display: none;">
+    <div class="modal-content">
+      <h3>Create New Profile</h3>
+      <label for="new-profile-name">Profile Name:</label>
+      <input type="text" id="new-profile-name" placeholder="Enter profile name">
+      <div class="modal-buttons">
+        <button id="save-new-profile">Save</button>
+        <button id="cancel-new-profile">Cancel</button>
+      </div>
     </div>
   </div>
 
@@ -65,4 +78,5 @@
 
   <script src="popup.js"></script>
 </body>
+
 </html>
