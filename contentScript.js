@@ -14,71 +14,170 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
       const name = nameElement ? nameElement.innerText.trim() : null;
       console.log('Extracted Name:', name);
 
-      // Extract job title and company information
+      // Extract experiences from the "experience" section
+      // Extract experiences from the sibling structure of the "experience" section
       let experiences = [];
-      const firstExperienceElement = document.querySelector('li.artdeco-list__item');
+      const experienceContainer = document.querySelector('#experience');
 
-      if (firstExperienceElement) {
-        // Extract job title
-        const jobTitleElement = firstExperienceElement.querySelector('span[aria-hidden="true"]');
-        const jobTitle = jobTitleElement ? jobTitleElement.textContent.trim() : null;
+      // Ensure the correct sibling structure
+      if (experienceContainer) {
+        // Navigate to the third sibling div containing the experience data
+        const siblingDiv = experienceContainer.nextElementSibling?.nextElementSibling;
 
-        // Extract company name
-        const companyElement = firstExperienceElement.querySelector('span.t-14.t-normal span[aria-hidden="true"]');
-        const company = companyElement ? companyElement.textContent.trim() : null;
+        if (siblingDiv) {
+          // Look for the experience items within this div
+          const experienceItems = siblingDiv.querySelectorAll('li.artdeco-list__item');
 
-        // Push to experiences array
-        if (jobTitle || company) {
-          experiences.push({ jobTitle, company });
+          experienceItems.forEach((item) => {
+            const jobTitleElement = item.querySelector('span[aria-hidden="true"]');
+            const jobTitle = jobTitleElement ? jobTitleElement.textContent.trim() : null;
+
+            const companyElement = item.querySelector('span.t-14.t-normal span[aria-hidden="true"]');
+            const company = companyElement ? companyElement.textContent.trim() : null;
+
+            if (jobTitle || company) {
+              experiences.push({ jobTitle, company });
+            }
+          });
+
+          console.log('Extracted Experiences:', experiences);
+        } else {
+          console.log('Sibling div containing experience data not found.');
         }
-
-        console.log('Extracted Experiences:', experiences);
+      } else {
+        console.log('Experience container with ID "experience" not found.');
       }
 
-      let summary = null;
-      const summaryElement = document.querySelector(
-        'div.wdYgMLaqDWfxTYsgpsmnJXppqkATKWYnXBeM span[aria-hidden="true"]'
-      );
-      if (summaryElement) {
-        summary = summaryElement.textContent.trim();
-        console.log('Extracted Summary:', summary);
+
+
+      let summary = '';
+      try {
+        // Select the element with id="about"
+        const aboutSection = document.querySelector('#about');
+      
+        if (aboutSection) {
+          // Navigate to the second sibling under the about section
+          const secondSibling = aboutSection.nextElementSibling?.nextElementSibling;
+      
+          if (secondSibling) {
+            // Find the about text within the specific div
+            const aboutSpan = secondSibling.querySelector(
+              'div.inline-show-more-text--is-collapsed span[aria-hidden="true"]'
+            );
+      
+            if (aboutSpan) {
+              summary = aboutSpan.textContent.trim();
+              console.log('Extracted About Text:', summary);
+            } else {
+              console.error('About text span not found.');
+            }
+          } else {
+            console.error('Second sibling under #about not found.');
+          }
+        } else {
+          console.error('Element with id="about" not found.');
+        }
+      } catch (error) {
+        console.error('Error extracting about text:', error);
       }
-      // Extract education details
+      
+
       let education = [];
-      const educationElement = document.querySelector('a.optional-action-target-wrapper.display-flex.flex-column.full-width');
+      const educationContainer = document.querySelector('#education');
 
-      if (educationElement) {
-        // Extract major
-        const majorElement = educationElement.querySelector('span.t-14.t-normal span[aria-hidden="true"]');
-        const major = majorElement ? majorElement.textContent.trim() : null;
-        console.log('Extracted Major:', major);
+      if (educationContainer) {
+        // Navigate to the third sibling div
+        const siblingDiv = educationContainer.nextElementSibling?.nextElementSibling;
+        if (siblingDiv) {
+          // Find all education items within this sibling div
+          const educationItems = siblingDiv.querySelectorAll('li.artdeco-list__item');
 
-        // Extract university
-        const universityElement = educationElement.querySelector('div.display-flex.align-items-center.mr1.hoverable-link-text.t-bold span[aria-hidden="true"]');
-        const university = universityElement ? universityElement.textContent.trim() : null;
-        console.log('Extracted University:', university);
+          educationItems.forEach((item) => {
+            // Extract university
+            const universityElement = item.querySelector(
+              'div.display-flex.align-items-center.mr1.hoverable-link-text.t-bold span[aria-hidden="true"]'
+            );
+            const university = universityElement ? universityElement.textContent.trim() : null;
 
-        if (university || major) {
-          education.push({ university, major });
+            // Extract degree and major
+            const degreeMajorElement = item.querySelector(
+              'span.t-14.t-normal span[aria-hidden="true"]'
+            );
+            const degreeMajor = degreeMajorElement ? degreeMajorElement.textContent.trim() : null;
+
+            // Extract duration
+            const durationElement = item.querySelector(
+              'span.t-14.t-normal.t-black--light span[aria-hidden="true"]'
+            );
+            const duration = durationElement ? durationElement.textContent.trim() : null;
+
+            // Extract grade (if available)
+            const gradeElement = item.querySelector(
+              'div.inline-show-more-text span[aria-hidden="true"]'
+            );
+            const grade = gradeElement && gradeElement.textContent.includes('Grade')
+              ? gradeElement.textContent.trim()
+              : null;
+
+            // Extract activities and societies (if available)
+            const activitiesElement = item.querySelector(
+              'div.inline-show-more-text span[aria-hidden="true"]'
+            );
+            const activities = activitiesElement && activitiesElement.textContent.includes('Activities')
+              ? activitiesElement.textContent.trim()
+              : null;
+
+            // Add education data to the array
+            if (university || degreeMajor || duration || grade || activities) {
+              education.push({
+                university,
+                degreeMajor,
+                duration,
+                grade,
+                activities,
+              });
+            }
+          });
+
+          console.log('Extracted All Education Details:', education);
+        } else {
+          console.log('Sibling div containing education data not found.');
         }
+      } else {
+        console.log('Education container with ID "education" not found.');
       }
-
-      // Extract skills
-      const skillElements = document.querySelectorAll('div.display-flex.align-items-center.mr1.hoverable-link-text.t-bold');
       let skills = [];
-      skillElements.forEach((skillElement, index) => {
-        const skillNameElement = skillElement.querySelector('span[aria-hidden="true"]');
-        const skillName = skillNameElement ? skillNameElement.textContent.trim() : null;
-
-        if (skillName) {
-          skills.push(skillName);
-          console.log(`Extracted Skill [${index}]:`, skillName);
+      try {
+        // Select the field with id="skills"
+        const skillsSection = document.querySelector('#skills');
+      
+        if (skillsSection) {
+          // Navigate to the second sibling under the skills section
+          const secondSibling = skillsSection.nextElementSibling?.nextElementSibling;
+      
+          if (secondSibling) {
+            // Find all skill name spans inside the second sibling
+            const skillNameSpans = secondSibling.querySelectorAll(
+              'div.display-flex.align-items-center.mr1.hoverable-link-text.t-bold span[aria-hidden="true"]'
+            );
+      
+            skillNameSpans.forEach(skillSpan => {
+              const skillName = skillSpan.textContent.trim();
+              if (skillName) {
+                skills.push(skillName);
+              }
+            });
+            console.log('Extracted Skills:', skills);
+          } else {
+            console.error('Second sibling under #skills not found.');
+          }
+        } else {
+          console.error('Element with id="skills" not found.');
         }
-      });
-
-      // Log all extracted skills
-      console.log('Extracted Skills:', skills);
-
+      } catch (error) {
+        console.error('Error extracting skills:', error);
+      }
+      
       // Prepare data object
       const data = {
         name,

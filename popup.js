@@ -24,6 +24,7 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('new-profile').addEventListener('click', createNewProfile);
   document.getElementById('delete-profile').addEventListener('click', deleteProfile);
   document.getElementById('save').addEventListener('click', saveProfileData);
+
   document.getElementById('reload').addEventListener('click', loadProfiles);
   document.getElementById('auto-fill').addEventListener('click', autoFill);
   document.getElementById('export-data').addEventListener('click', exportData);
@@ -135,9 +136,27 @@ function formatExperiences(experiences) {
 }
 
 function formatEducation(education) {
-  if (!Array.isArray(education)) return '';
-  return education.map(edu => `${edu.university || ''} - ${edu.major || ''}`).join('\n');
+  if (!Array.isArray(education)) {
+    console.error("Invalid education data:", education);
+    return '';
+  }
+
+  return education.map((edu, index) => {
+    console.log(`Processing education entry [${index}]:`, edu);
+
+    const university = edu.university || 'Unknown University';
+    const degreeMajor = edu.degreeMajor || 'Degree/Major not specified';
+    const duration = edu.duration ? `Duration: ${edu.duration}` : 'Duration not specified';
+    const grade = edu.grade ? `Grade: ${edu.grade}` : 'Grade not specified';
+    const activities = edu.activities ? `Activities: ${edu.activities}` : 'Activities not specified';
+
+    const formatted = `${university}\n${degreeMajor}\n${duration}\n${grade}\n${activities}`;
+    console.log(`Formatted education entry [${index}]:`, formatted);
+
+    return formatted;
+  }).join('\n\n'); // Add a blank line between entries
 }
+
 
 function formatSkills(skills) {
   if (!Array.isArray(skills)) return '';
@@ -432,7 +451,6 @@ function extractData() {
     );
   });
 }
-
 // Function to populate data fields with extracted data
 function populateDataFields(data) {
   document.getElementById('name').value = data.name || '';
@@ -446,27 +464,37 @@ function populateDataFields(data) {
         expStr += exp.jobTitle;
       }
       if (exp.company) {
-        expStr += ` at ${exp.company}`;
+        expStr += ` \n ${exp.company}`;
       }
       return expStr;
-    }).join('\n');
+    }).join('\n\n');
   }
   document.getElementById('experiences').value = experiencesText;
 
   document.getElementById('summary').value = data.summary || '';
-  // Format education array into a string
+
+  // Format education array into a string with all details
   let educationText = '';
   if (data.education && data.education.length > 0) {
     educationText = data.education.map(edu => {
       let eduStr = '';
       if (edu.university) {
-        eduStr += edu.university;
+        eduStr += ` ${edu.university}`;
       }
-      if (edu.major) {
-        eduStr += ` - ${edu.major}`;
+      if (edu.degreeMajor) {
+        eduStr += `\n ${edu.degreeMajor}`;
       }
-      return eduStr;
-    }).join('\n');
+      // if (edu.duration) {
+      //   eduStr += `\n ${edu.duration}`;
+      // }
+      // if (edu.grade) {
+      //   eduStr += `\nGrade: ${edu.grade}`;
+      // }
+      // if (edu.activities) {
+      //   eduStr += `\nActivities: ${edu.activities}`;
+      // }
+      return eduStr.trim(); // Trim any trailing whitespace
+    }).join('\n\n'); // Add a blank line between entries
   }
   document.getElementById('education').value = educationText;
 
