@@ -8,7 +8,6 @@ let customFields = [];
 
 // Load profiles when the popup is opened
 document.addEventListener('DOMContentLoaded', () => {
-
   loadProfiles();
 
   // Event listeners for buttons and inputs
@@ -34,7 +33,13 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('file-input').addEventListener('change', importData);
   document.getElementById('extract-data').addEventListener('click', extractData); // Event listener
   document.getElementById('send-email').addEventListener('click', sendEmail);
+
+  // Add Open Dashboard button listener
+  document.getElementById('open-dashboard').addEventListener('click', () => {
+    chrome.tabs.create({ url: chrome.runtime.getURL('dashboard.html') });
+  });
 });
+
 
 // Function to add a custom field to the popup
 function addCustomField(key = '', value = '') {

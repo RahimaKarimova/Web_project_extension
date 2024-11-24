@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Job Application Dashboard</title>
+  <link rel="stylesheet" href="styles/dashboard.css">
+</head>
+<body>
+  <header>
+    <h1>Job Application Tracker</h1>
+  </header>
+  <main>
+    <table id="application-table">
+      <thead>
+        <tr>
+          <th>Company</th>
+          <th>Job Title</th>
+          <th>Date Applied</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- Dynamic rows will be inserted here -->
+      </tbody>
+    </table>
+    <button id="add-entry-btn">Add Application</button>
+  </main>
+
+  <!-- Modal for adding/updating applications -->
+  <div id="modal" class="hidden">
+    <div class="modal-content">
+      <h2 id="modal-title">Add Application</h2>
+      <label for="company">Company:</label>
+      <input type="text" id="company" placeholder="Company Name">
+
+      <label for="job-title">Job Title:</label>
+      <input type="text" id="job-title" placeholder="Job Title">
+
+      <label for="date-applied">Date Applied:</label>
+      <input type="date" id="date-applied">
+
+      <label for="status">Status:</label>
+      <select id="status">
+        <option value="Pending">Pending</option>
+        <option value="Interviewed">Interviewed</option>
+        <option value="Rejected">Rejected</option>
+        <option value="Accepted">Accepted</option>
+      </select>
+
+      <button id="save-entry-btn">Save</button>
+      <button id="cancel-btn">Cancel</button>
+    </div>
+  </div>
+  <script src="scripts/dashboard.js"></script>
+</body>
+</html>

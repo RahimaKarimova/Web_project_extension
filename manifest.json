@@ -1,21 +1,26 @@
 {
   "manifest_version": 3,
-  "name": "Form Auto Filler",
+  "name": "Supreme Auto Filler with Job Tracker",
   "version": "1.0",
-  "description": "An extension to auto-fill forms and extract data.",
-  "permissions": [
-    "scripting",
-    "activeTab",
-    "storage"
-  ],
-  "host_permissions": [
-    "*://*/*"
-  ],
+  "description": "An intelligent auto form filler and job application tracking dashboard.",
+  "permissions": ["storage", "activeTab", "tabs", "scripting"],
   "action": {
-    "default_popup": "popup.html",
-    "default_icon": "icons/icon.png"
+    "default_popup": "popup.html"
   },
-  "icons": {
-    "48": "icons/icon.png"
-  }
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": ["dashboard.html"],
+      "matches": ["<all_urls>"]
+    }
+  ]
 }
