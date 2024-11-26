@@ -559,4 +559,3 @@ function sendEmail() {
     setTimeout(() => URL.revokeObjectURL(fileUrl), 1000);
   });
 }
-
