@@ -122,7 +122,9 @@ input[type="text"], textarea, select {
 }
 
 textarea {
-  height: 60px;
+  resize: vertical;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 button {
