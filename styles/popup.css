@@ -209,3 +209,7 @@ button:active {
 .delete-profile-btn:hover {
   background-color: #cc0000;
 }
+
+#extract-job-details, #generate-letter{
+margin-bottom: 20px;
+}

@@ -1,5 +1,3 @@
-// popup.js
-
 let profiles = [];
 let selectedProfileIndex = 0;
 
@@ -31,15 +29,69 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('file-input').click();
   });
   document.getElementById('file-input').addEventListener('change', importData);
-  document.getElementById('extract-data').addEventListener('click', extractData); // Event listener
+  document.getElementById('extract-data').addEventListener('click', extractData);
   document.getElementById('send-email').addEventListener('click', sendEmail);
 
   // Add Open Dashboard button listener
   document.getElementById('open-dashboard').addEventListener('click', () => {
     chrome.tabs.create({ url: chrome.runtime.getURL('dashboard.html') });
   });
-});
 
+  // Event listener for the "Generate Cover Letter" button
+  document.getElementById('generate-letter').addEventListener('click', () => {
+    const data = profiles[selectedProfileIndex].data;
+
+    // Get company name and job title from input fields
+    const companyName = document.getElementById('company-name').value.trim();
+    const jobTitle = document.getElementById('job-title').value.trim();
+
+    // Call the createCoverLetter function
+    createCoverLetter(data, companyName, jobTitle);
+  });
+
+  // Event listener for "Extract from Page" button
+  document.getElementById('extract-job-details').addEventListener('click', () => {
+    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+      const tabId = tabs[0].id;
+
+      chrome.scripting.executeScript(
+        {
+          target: { tabId: tabId },
+          func: extractJobDetails,
+        },
+        (results) => {
+          if (chrome.runtime.lastError) {
+            console.error('Error injecting script:', chrome.runtime.lastError);
+            alert('Error extracting job details: ' + chrome.runtime.lastError.message);
+            return;
+          }
+
+          if (!results || results.length === 0 || !results[0].result) {
+            console.error('No results from script execution');
+            alert('Unable to extract job details from the page.');
+            return;
+          }
+
+          const { jobTitle, companyName } = results[0].result;
+          if (!jobTitle && !companyName) {
+            alert('Unable to detect job title or company name on this page.');
+            return;
+          }
+
+          // Populate the input fields in the popup
+          if (jobTitle) {
+            document.getElementById('job-title').value = jobTitle;
+          }
+          if (companyName) {
+            document.getElementById('company-name').value = companyName;
+          }
+
+          showMessage('Job details extracted successfully.');
+        }
+      );
+    });
+  });
+});
 
 // Function to add a custom field to the popup
 function addCustomField(key = '', value = '') {
@@ -117,9 +169,11 @@ function loadSelectedProfileData() {
     document.getElementById('experiences').value = formatExperiences(data.experiences) || '';
     document.getElementById('education').value = formatEducation(data.education) || '';
     document.getElementById('skills').value = formatSkills(data.skills) || '';
-    document.getElementById('certificates').value = data.certificates || '';
+    document.getElementById('certificates').value = formatCertificates(data.certificates) || '';
+    document.getElementById('languages').value = formatLanguages(data.languages) || '';
     document.getElementById('portfolio').value = data.portfolio || '';
     document.getElementById('summary').value = data.summary || '';
+    document.getElementById('cover-letter').value = data.coverLetter || '';
 
     // Clear existing custom fields
     document.getElementById('custom-fields-container').innerHTML = '';
@@ -141,14 +195,8 @@ function formatExperiences(experiences) {
 }
 
 function formatEducation(education) {
-  if (!Array.isArray(education)) {
-    console.error("Invalid education data:", education);
-    return '';
-  }
-
+  if (!Array.isArray(education)) return '';
   return education.map((edu, index) => {
-    console.log(`Processing education entry [${index}]:`, edu);
-
     const university = edu.university || 'Unknown University';
     const degreeMajor = edu.degreeMajor || 'Degree/Major not specified';
     const duration = edu.duration ? `Duration: ${edu.duration}` : 'Duration not specified';
@@ -156,16 +204,38 @@ function formatEducation(education) {
     const activities = edu.activities ? `Activities: ${edu.activities}` : 'Activities not specified';
 
     const formatted = `${university}\n${degreeMajor}\n${duration}\n${grade}\n${activities}`;
-    console.log(`Formatted education entry [${index}]:`, formatted);
-
     return formatted;
   }).join('\n\n'); // Add a blank line between entries
 }
 
-
 function formatSkills(skills) {
   if (!Array.isArray(skills)) return '';
   return skills.join(', ');
+}
+
+function formatCertificates(certificates) {
+  if (!Array.isArray(certificates)) return '';
+  return certificates.map(cert => {
+    let certStr = cert.certificateName || '';
+    if (cert.issuingOrganization) {
+      certStr += ` from ${cert.issuingOrganization}`;
+    }
+    if (cert.dateText) {
+      certStr += ` (${cert.dateText})`;
+    }
+    return certStr;
+  }).join('\n');
+}
+
+function formatLanguages(languages) {
+  if (!Array.isArray(languages)) return '';
+  return languages.map(lang => {
+    let langStr = lang.languageName || '';
+    if (lang.proficiency) {
+      langStr += ` - ${lang.proficiency}`;
+    }
+    return langStr;
+  }).join('\n');
 }
 
 // Function to create a new profile
@@ -183,7 +253,6 @@ function createNewProfile() {
   const saveProfile = () => {
     const profileName = newProfileNameInput.value.trim();
     if (profileName) {
-      // Add the new profile logic here
       profiles.push({
         profileName: profileName,
         data: {}
@@ -241,9 +310,11 @@ function saveProfileData() {
   const experiencesInput = document.getElementById('experiences').value.trim();
   const educationInput = document.getElementById('education').value.trim();
   const skillsInput = document.getElementById('skills').value.trim();
-  const certificates = document.getElementById('certificates').value.trim();
+  const certificatesInput = document.getElementById('certificates').value.trim();
+  const languagesInput = document.getElementById('languages').value.trim();
   const portfolio = document.getElementById('portfolio').value.trim();
   const summary = document.getElementById('summary').value.trim();
+  const coverLetter = document.getElementById('cover-letter').value.trim();
 
   // Process experiences and education into structured arrays
   const experiencesArray = parseTextToArray(experiencesInput, ' at ');
@@ -252,14 +323,42 @@ function saveProfileData() {
   // Process skills into an array
   const skillsArray = skillsInput.split(',').map(skill => skill.trim()).filter(skill => skill);
 
+  // Process certificates into an array
+  const certificatesArray = certificatesInput.split('\n').map(line => {
+    const [namePart, rest] = line.split(' from ');
+    let certificateName = namePart ? namePart.trim() : '';
+    let issuingOrganization = '';
+    let dateText = '';
+
+    if (rest) {
+      const dateStart = rest.indexOf('(');
+      if (dateStart !== -1) {
+        issuingOrganization = rest.substring(0, dateStart).trim();
+        dateText = rest.substring(dateStart + 1, rest.length - 1).trim();
+      } else {
+        issuingOrganization = rest.trim();
+      }
+    }
+
+    return { certificateName, issuingOrganization, dateText };
+  }).filter(cert => cert.certificateName);
+
+  // Process languages into an array
+  const languagesArray = languagesInput.split('\n').map(line => {
+    const [languageName, proficiency] = line.split(' - ');
+    return { languageName: languageName.trim(), proficiency: proficiency ? proficiency.trim() : '' };
+  }).filter(lang => lang.languageName);
+
   const data = {
     name: name || '',
     experiences: experiencesArray,
     education: educationArray,
     skills: skillsArray,
-    certificates: certificates || '',
+    certificates: certificatesArray,
+    languages: languagesArray,
     portfolio: portfolio || '',
     summary: summary || '',
+    coverLetter: coverLetter || '',
     customFields: customFields.map(div => {
       const inputs = div.getElementsByTagName('input');
       return {
@@ -286,7 +385,7 @@ function parseTextToArray(input, delimiter) {
     if (delimiter === ' at ') {
       return { jobTitle: part1 ? part1.trim() : '', company: part2 ? part2.trim() : '' };
     } else if (delimiter === ' - ') {
-      return { university: part1 ? part1.trim() : '', major: part2 ? part2.trim() : '' };
+      return { university: part1 ? part1.trim() : '', degreeMajor: part2 ? part2.trim() : '' };
     }
     return {};
   }).filter(item => Object.values(item).some(value => value));
@@ -310,9 +409,56 @@ function showMessage(message) {
   }, 2000);
 }
 
+function generateCoverLetter() {
+  const data = profiles[selectedProfileIndex].data;
+
+  // Get company name and job title from input fields
+  const companyName = document.getElementById('company-name').value.trim();
+  const jobTitle = document.getElementById('job-title').value.trim();
+
+  if (!companyName || !jobTitle) {
+    alert('Please enter both Company Name and Job Title, or click "Extract from Page".');
+    return;
+  }
+
+  // Proceed to create the cover letter
+  createCoverLetter(data, companyName, jobTitle)
+    .then((coverLetter) => {
+      document.getElementById('cover-letter').value = coverLetter;
+      data.coverLetter = coverLetter;
+      profiles[selectedProfileIndex].data = data;
+      chrome.storage.local.set({ profiles: profiles });
+      showMessage('Cover letter generated successfully.');
+    })
+    .catch((error) => {
+      console.error('Error generating cover letter:', error);
+      alert('Error generating cover letter: ' + error.message);
+    });
+}
+
+// Function to extract job details from the application page
+function extractJobDetails() {
+  let jobTitle = '';
+  let companyName = '';
+
+  // Attempt to detect job title and company name
+  const jobTitleElement = document.querySelector('h1.job-title, h1.title, .job-title, .title, h1');
+  const companyNameElement = document.querySelector('.company-name, .company, .employer');
+
+  if (jobTitleElement) {
+    jobTitle = jobTitleElement.innerText.trim();
+  }
+
+  if (companyNameElement) {
+    companyName = companyNameElement.innerText.trim();
+  }
+
+  return { jobTitle, companyName };
+}
+
 // Function to autofill the form on the current tab
 function autoFill() {
-  saveProfileData()
+  saveProfileData();
   const data = profiles[selectedProfileIndex].data;
   if (data) {
     chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
@@ -442,10 +588,6 @@ function extractData() {
             const data = response.data;
             console.log('Extracted Data:', data);
             populateDataFields(data);
-            // Optionally save the extracted data
-            // profiles[selectedProfileIndex].data = data;
-            // chrome.storage.local.set({ profiles: profiles });
-            // Display a success message
             showMessage('Data extracted successfully.');
           } else {
             console.error('Error extracting data:', response.error);
@@ -456,6 +598,7 @@ function extractData() {
     );
   });
 }
+
 // Function to populate data fields with extracted data
 function populateDataFields(data) {
   document.getElementById('name').value = data.name || '';
@@ -469,10 +612,10 @@ function populateDataFields(data) {
         expStr += exp.jobTitle;
       }
       if (exp.company) {
-        expStr += ` \n ${exp.company}`;
+        expStr += ` at ${exp.company}`;
       }
       return expStr;
-    }).join('\n\n');
+    }).join('\n');
   }
   document.getElementById('experiences').value = experiencesText;
 
@@ -484,22 +627,13 @@ function populateDataFields(data) {
     educationText = data.education.map(edu => {
       let eduStr = '';
       if (edu.university) {
-        eduStr += ` ${edu.university}`;
+        eduStr += `${edu.university}`;
       }
       if (edu.degreeMajor) {
-        eduStr += `\n ${edu.degreeMajor}`;
+        eduStr += ` - ${edu.degreeMajor}`;
       }
-      // if (edu.duration) {
-      //   eduStr += `\n ${edu.duration}`;
-      // }
-      // if (edu.grade) {
-      //   eduStr += `\nGrade: ${edu.grade}`;
-      // }
-      // if (edu.activities) {
-      //   eduStr += `\nActivities: ${edu.activities}`;
-      // }
-      return eduStr.trim(); // Trim any trailing whitespace
-    }).join('\n\n'); // Add a blank line between entries
+      return eduStr.trim();
+    }).join('\n');
   }
   document.getElementById('education').value = educationText;
 
@@ -510,13 +644,35 @@ function populateDataFields(data) {
   }
   document.getElementById('skills').value = skillsText;
 
-  // Certificates, Portfolio, and Summary remain as they are or can be cleared
-  // For now, we'll leave them as they are
-  // document.getElementById('certificates').value = '';
-  // document.getElementById('portfolio').value = '';
-  // document.getElementById('summary').value = '';
+  // Format certificates into a string
+  let certificatesText = '';
+  if (data.certificates && data.certificates.length > 0) {
+    certificatesText = data.certificates.map(cert => {
+      let certStr = cert.certificateName || '';
+      if (cert.issuingOrganization) {
+        certStr += ` from ${cert.issuingOrganization}`;
+      }
+      if (cert.dateText) {
+        certStr += ` (${cert.dateText})`;
+      }
+      return certStr;
+    }).join('\n');
+  }
+  document.getElementById('certificates').value = certificatesText;
 
-  // Handle custom fields if any
+  // Format languages into a string
+  let languagesText = '';
+  if (data.languages && data.languages.length > 0) {
+    languagesText = data.languages.map(lang => {
+      let langStr = lang.languageName || '';
+      if (lang.proficiency) {
+        langStr += ` - ${lang.proficiency}`;
+      }
+      return langStr;
+    }).join('\n');
+  }
+  document.getElementById('languages').value = languagesText;
+
   // Clear existing custom fields
   document.getElementById('custom-fields-container').innerHTML = '';
   customFields = [];
