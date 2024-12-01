@@ -213,3 +213,12 @@ button:active {
 #extract-job-details, #generate-letter{
 margin-bottom: 20px;
 }
+
+.history {
+  margin-top: 20px;
+}
+
+.history button {
+  margin-bottom: 10px;
+  padding: 10px 20px;
+}
