@@ -11,11 +11,59 @@
       display: none;
     }
 
-    .modal-content {
+    .modal {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
       background: #fff;
       padding: 20px;
-      border-radius: 8px;
+      border-radius: 10px;
       box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+      width: 90%;
+      max-width: 400px;
+      z-index: 1000;
+    }
+
+    .modal h2 {
+      margin-top: 0;
+      color: #007bff;
+      font-size: 1.5rem;
+      text-align: center;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    label {
+      font-weight: bold;
+    }
+
+    input,
+    select {
+      padding: 8px;
+      font-size: 1rem;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+
+    .form-actions {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 20px;
+    }
+
+    #save-entry-btn {
+      background-color: #007bff;
+      color: white;
+    }
+
+    #cancel-btn {
+      background-color: #ccc;
+      color: #333;
     }
   </style>
 </head>
@@ -49,33 +97,41 @@
 
   <!-- Modal for Adding/Editing Applications -->
   <div id="modal" class="hidden">
-    <div class="modal-content">
+    <div class="modal">
       <h2 id="modal-title">Add Application</h2>
-      <label for="company">Company:</label>
-      <input type="text" id="company" placeholder="Company Name">
-
-      <label for="job-title">Job Title:</label>
-      <input type="text" id="job-title" placeholder="Job Title">
-
-      <label for="date-applied">Date Applied:</label>
-      <input type="date" id="date-applied">
-
-      <label for="status">Status:</label>
-      <select id="status">
-        <option value="Pending">Pending</option>
-        <option value="Interviewed">Interviewed</option>
-        <option value="Rejected">Rejected</option>
-        <option value="Accepted">Accepted</option>
-      </select>
-
-      <button id="save-entry-btn">Save</button>
-      <button id="cancel-btn">Cancel</button>
+      <form id="application-form">
+        <div class="form-group">
+          <label for="company">Company:</label>
+          <input type="text" id="company" placeholder="Company Name">
+        </div>
+        <div class="form-group">
+          <label for="job-title">Job Title:</label>
+          <input type="text" id="job-title" placeholder="Job Title">
+        </div>
+        <div class="form-group">
+          <label for="date-applied">Date Applied:</label>
+          <input type="date" id="date-applied">
+        </div>
+        <div class="form-group">
+          <label for="status">Status:</label>
+          <select id="status">
+            <option value="Pending">Pending</option>
+            <option value="Interviewed">Interviewed</option>
+            <option value="Rejected">Rejected</option>
+            <option value="Accepted">Accepted</option>
+          </select>
+        </div>
+        <div class="form-actions">
+          <button id="save-entry-btn" type="button">Save</button>
+          <button id="cancel-btn" type="button">Cancel</button>
+        </div>
+      </form>
     </div>
   </div>
 
   <!-- History Section -->
   <div id="history-modal" class="hidden">
-    <div class="modal-content">
+    <div class="modal">
       <h2>Saved History</h2>
       <button class="close-btn" onclick="document.getElementById('history-modal').classList.add('hidden')">Close</button>
       <table id="history-table" border="1">

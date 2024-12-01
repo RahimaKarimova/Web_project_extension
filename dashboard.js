@@ -7,29 +7,31 @@ document.addEventListener('DOMContentLoaded', () => {
     const saveBtn = document.getElementById('save-entry-btn');
     const cancelBtn = document.getElementById('cancel-btn');
     const tableBody = document.querySelector('#application-table tbody');
-    const historyTableBody = document.querySelector('#history-table tbody');
-    const viewHistoryBtn = document.getElementById('view-history-btn');
     const historyModal = document.getElementById('history-modal');
+    const viewHistoryBtn = document.getElementById('view-history-btn');
+    const historyTableBody = document.querySelector('#history-table tbody');
+    const closeHistoryBtn = document.querySelector('.close-btn');
 
     let applications = [];
-    let editIndex = -1; // Keep track of the entry being edited
+    let editIndex = -1; // Track the entry being edited
 
     // *Reference*: Chrome Developers
     // *Topic*: chrome.storage API
     // *URL*: https://developer.chrome.com/docs/extensions/reference/storage
     // Load data from storage for applications
+    
     chrome.storage.local.get(['applications'], (result) => {
         applications = result.applications || [];
         renderTable();
     });
 
-    // Load data from storage for form history
+    // Load history from storage
     chrome.storage.local.get(['formHistory'], (result) => {
         const history = result.formHistory || [];
         renderHistoryTable(history);
     });
 
-    // Render the applications table
+    // Render applications table
     function renderTable() {
         tableBody.innerHTML = '';
         applications.forEach((app, index) => {
@@ -48,26 +50,26 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         // Add event listeners for edit and delete buttons
-        document.querySelectorAll('.edit-btn').forEach((button) => {
+        document.querySelectorAll('.edit-btn').forEach((button) =>
             button.addEventListener('click', (event) => {
                 const index = event.target.dataset.index;
                 editEntry(index);
-            });
-        });
+            })
+        );
 
-        document.querySelectorAll('.delete-btn').forEach((button) => {
+        document.querySelectorAll('.delete-btn').forEach((button) =>
             button.addEventListener('click', (event) => {
                 const index = event.target.dataset.index;
                 deleteEntry(index);
-            });
-        });
+            })
+        );
     }
 
-    // Show the modal for adding a new entry
+    // Show the modal for adding a new application
     addEntryBtn.addEventListener('click', () => {
         modal.classList.remove('hidden');
         resetModal();
-        editIndex = -1; // Ensure we're not editing
+        editIndex = -1; // Reset editing state
     });
 
     // Hide the modal
@@ -75,18 +77,23 @@ document.addEventListener('DOMContentLoaded', () => {
         modal.classList.add('hidden');
     });
 
-    // Save or update an application entry
+    // Save or update an application
     saveBtn.addEventListener('click', () => {
-        const company = document.getElementById('company').value;
-        const jobTitle = document.getElementById('job-title').value;
-        const dateApplied = document.getElementById('date-applied').value;
+        const company = document.getElementById('company').value.trim();
+        const jobTitle = document.getElementById('job-title').value.trim();
+        const dateApplied = document.getElementById('date-applied').value.trim();
         const status = document.getElementById('status').value;
 
+        if (!company || !jobTitle || !dateApplied) {
+            alert('All fields are required.');
+            return;
+        }
+
         if (editIndex === -1) {
-            // Add new entry
+            // Add new application
             applications.push({ company, jobTitle, dateApplied, status });
         } else {
-            // Update existing entry
+            // Update existing application
             applications[editIndex] = { company, jobTitle, dateApplied, status };
         }
 
@@ -95,7 +102,7 @@ document.addEventListener('DOMContentLoaded', () => {
         modal.classList.add('hidden');
     });
 
-    // Reset the modal fields
+    // Reset modal fields
     function resetModal() {
         document.getElementById('company').value = '';
         document.getElementById('job-title').value = '';
@@ -103,7 +110,7 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('status').value = 'Pending';
     }
 
-    // Edit an application entry
+    // Edit an existing application
     function editEntry(index) {
         editIndex = index;
         const app = applications[index];
@@ -114,13 +121,15 @@ document.addEventListener('DOMContentLoaded', () => {
         modal.classList.remove('hidden');
     }
 
-    // Delete an application entry
+    // Delete an application
     function deleteEntry(index) {
-        applications.splice(index, 1);
-        chrome.storage.local.set({ applications }, renderTable);
+        if (confirm('Are you sure you want to delete this application?')) {
+            applications.splice(index, 1);
+            chrome.storage.local.set({ applications }, renderTable);
+        }
     }
 
-    // Render the saved form history table
+    // Render the form history table
     function renderHistoryTable(history) {
         historyTableBody.innerHTML = '';
         history.forEach((entry, index) => {
@@ -137,15 +146,15 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         // Add event listeners for delete buttons
-        document.querySelectorAll('.delete-history-btn').forEach((button) => {
+        document.querySelectorAll('.delete-history-btn').forEach((button) =>
             button.addEventListener('click', (event) => {
                 const index = event.target.dataset.index;
                 deleteHistoryEntry(index, history);
-            });
-        });
+            })
+        );
     }
 
-    // Delete a saved history entry
+    // Delete a history entry
     function deleteHistoryEntry(index, history) {
         if (confirm('Are you sure you want to delete this entry?')) {
             history.splice(index, 1);
@@ -155,11 +164,15 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
     }
-
     // OpenAI. (2024, December 1). ChatGPT (v4). Prompt: "How to toggle visibility of a modal in JavaScript using classes?"
     // Show or hide the history modal
+    // Show the history section (bottom of the page)
     viewHistoryBtn.addEventListener('click', () => {
         historyModal.classList.toggle('hidden');
     });
 
+    // Close the history modal
+    closeHistoryBtn.addEventListener('click', () => {
+        historyModal.classList.add('hidden');
+    });
 });
