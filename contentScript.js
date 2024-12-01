@@ -312,29 +312,29 @@ function fillForm(data) {
     const labelText = (getLabelText(input) || '').toLowerCase();
 
     // Fill name
-    if (data.name && matchesField(['name', 'full name', 'your name'], nameAttr, idAttr, placeholderAttr, labelText)) {
+    if (data.name && matchesField(['name', 'full name', 'your name', 'applicant name', 'candidate name', 'first name', 'last name', 'given name', 'surname', 'legal name'], nameAttr, idAttr, placeholderAttr, labelText)) {
       input.value = data.name;
       input.dispatchEvent(new Event('input', { bubbles: true }));
     }
     // Fill experiences
-    else if (data.experiences && data.experiences.length > 0 && matchesField(['experience', 'work experience'], nameAttr, idAttr, placeholderAttr, labelText)) {
+    else if (data.experiences && data.experiences.length > 0 && matchesField(['experience', 'work experience', 'employment history', 'professional experience', 'job history', 'previous employment', 'past jobs', 'career history', 'prior positions', 'work background'], nameAttr, idAttr, placeholderAttr, labelText)) {
       const experiencesText = data.experiences.map(exp => `${exp.jobTitle || ''} at ${exp.company || ''}`).join('\n');
       input.value = experiencesText;
       input.dispatchEvent(new Event('input', { bubbles: true }));
     }
     // Fill education
-    else if (data.education && data.education.length > 0 && matchesField(['education', 'educational background'], nameAttr, idAttr, placeholderAttr, labelText)) {
+    else if (data.education && data.education.length > 0 && matchesField(['education', 'educational background', 'academic history', 'education history', 'degrees', 'qualifications', 'academic qualifications', 'scholastic record', 'educational attainment', 'educational qualifications'], nameAttr, idAttr, placeholderAttr, labelText)) {
       const educationText = data.education.map(edu => `${edu.university || ''} - ${edu.degreeMajor || ''}`).join('\n');
       input.value = educationText;
       input.dispatchEvent(new Event('input', { bubbles: true }));
     }
     // Fill skills
-    else if (data.skills && data.skills.length > 0 && matchesField(['skills', 'your skills'], nameAttr, idAttr, placeholderAttr, labelText)) {
+    else if (data.skills && data.skills.length > 0 && matchesField(['skills', 'your skills', 'skill set', 'competencies', 'abilities', 'expertise', 'proficiencies', 'technical skills', 'soft skills', 'core competencies'], nameAttr, idAttr, placeholderAttr, labelText)) {
       input.value = data.skills.join(', ');
       input.dispatchEvent(new Event('input', { bubbles: true }));
     }
     // Fill certificates
-    else if (data.certificates && data.certificates.length > 0 && matchesField(['certificates', 'certification'], nameAttr, idAttr, placeholderAttr, labelText)) {
+    else if (data.certificates && data.certificates.length > 0 && matchesField(['certificates', 'certification', 'licenses', 'accreditations', 'diplomas', 'credentials', 'certifications and licenses', 'professional certifications', 'certification details', 'licensure'], nameAttr, idAttr, placeholderAttr, labelText)) {
       const certificatesText = data.certificates.map(cert => {
         let certStr = cert.certificateName || '';
         if (cert.issuingOrganization) {
@@ -349,7 +349,7 @@ function fillForm(data) {
       input.dispatchEvent(new Event('input', { bubbles: true }));
     }
     // Fill languages
-    else if (data.languages && data.languages.length > 0 && matchesField(['languages', 'language'], nameAttr, idAttr, placeholderAttr, labelText)) {
+    else if (data.languages && data.languages.length > 0 && matchesField(['languages', 'language', 'spoken languages', 'language proficiency', 'linguistic abilities', 'language skills', 'languages spoken', 'bilingual abilities', 'multilingual skills', 'language competencies'], nameAttr, idAttr, placeholderAttr, labelText)) {
       const languagesText = data.languages.map(lang => {
         let langStr = lang.languageName;
         if (lang.proficiency) {
@@ -361,17 +361,17 @@ function fillForm(data) {
       input.dispatchEvent(new Event('input', { bubbles: true }));
     }
     // Fill portfolio links
-    else if (data.portfolio && matchesField(['portfolio', 'portfolio links'], nameAttr, idAttr, placeholderAttr, labelText)) {
+    else if (data.portfolio && matchesField(['portfolio', 'portfolio links', 'work samples', 'project links', 'online portfolio', 'portfolio URL', 'portfolio website', 'sample works', 'portfolio showcase', 'digital portfolio'], nameAttr, idAttr, placeholderAttr, labelText)) {
       input.value = data.portfolio;
       input.dispatchEvent(new Event('input', { bubbles: true }));
     }
     // Fill personal summary
-    else if (data.summary && matchesField(['summary', 'personal summary', 'about me'], nameAttr, idAttr, placeholderAttr, labelText)) {
+    else if (data.summary && matchesField(['summary', 'personal summary', 'about me', 'professional summary', 'personal statement', 'bio', 'biography', 'self-description', 'candidate profile', 'introduction'], nameAttr, idAttr, placeholderAttr, labelText)) {
       input.value = data.summary;
       input.dispatchEvent(new Event('input', { bubbles: true }));
     }
     // Fill cover letter
-    else if (data.coverLetter && matchesField(['cover letter', 'motivation letter', 'letter'], nameAttr, idAttr, placeholderAttr, labelText)) {
+    else if (data.coverLetter && matchesField(['cover letter', 'motivation letter', 'letter', 'application letter', 'covering letter', 'letter of intent', 'statement of purpose', 'motivational statement', 'introductory letter', 'letter of application'], nameAttr, idAttr, placeholderAttr, labelText)) {
       input.value = data.coverLetter;
       input.dispatchEvent(new Event('input', { bubbles: true }));
     }
