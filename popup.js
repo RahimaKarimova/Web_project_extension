@@ -91,6 +91,14 @@ document.addEventListener('DOMContentLoaded', () => {
       );
     });
   });
+
+  loadMappings();
+  // Add autofill button functionality
+  document.getElementById("autofillButton").addEventListener("click", () => {
+      chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+          chrome.tabs.sendMessage(tabs[0].id, { action: "applyMappings", currentProfileIndex: selectedProfileIndex });
+      });
+  });
 });
 
 // Function to add a custom field to the popup
@@ -457,44 +465,63 @@ function extractJobDetails() {
 }
 
 // Function to autofill the form on the current tab
+// Function to autofill the form on the current tab
 function autoFill() {
   saveProfileData();
   const data = profiles[selectedProfileIndex].data;
-  if (data) {
-    chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
-      const tabId = tabs[0].id;
 
-      // Inject contentScript.js into the active tab
-      chrome.scripting.executeScript(
-        {
-          target: { tabId: tabId },
-          files: ['contentScript.js']
-        },
-        () => {
-          if (chrome.runtime.lastError) {
-            console.error(chrome.runtime.lastError);
-            alert('Error injecting content script: ' + chrome.runtime.lastError.message);
-          } else {
-            // After injecting, send the message
-            chrome.tabs.sendMessage(tabId, { action: 'autoFill', data }, function (response) {
-              if (chrome.runtime.lastError) {
-                console.error(chrome.runtime.lastError);
-                alert('Error: ' + chrome.runtime.lastError.message);
-              } else if (response && response.status) {
-                console.log(response.status);
-                // Display a success message
-                showMessage(response.status);
-              } else {
-                console.error('Unexpected response:', response);
-                alert('Unexpected response from content script.');
-              }
-            });
+  if (data) {
+    // Retrieve field mappings from storage
+    chrome.storage.local.get(["fieldMappings"], (result) => {
+      const fieldMappings = result.fieldMappings || [];
+
+      chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
+        const tabId = tabs[0].id;
+
+        // Inject contentScript.js into the active tab
+        chrome.scripting.executeScript(
+          {
+            target: { tabId: tabId },
+            files: ["contentScript.js"],
+          },
+          () => {
+            if (chrome.runtime.lastError) {
+              console.error(chrome.runtime.lastError);
+              alert(
+                "Error injecting content script: " +
+                  chrome.runtime.lastError.message
+              );
+            } else {
+              // Send profile data and field mappings to the content script
+              chrome.tabs.sendMessage(
+                tabId,
+                {
+                  action: "autoFill",
+                  data,
+                  fieldMappings,
+                },
+                function (response) {
+                  if (chrome.runtime.lastError) {
+                    console.error(chrome.runtime.lastError);
+                    alert(
+                      "Error: " + chrome.runtime.lastError.message
+                    );
+                  } else if (response && response.status) {
+                    console.log(response.status);
+                    showMessage(response.status);
+                  } else {
+                    console.error("Unexpected response:", response);
+                    alert("Unexpected response from content script.");
+                  }
+                }
+              );
+            }
           }
-        }
-      );
+        );
+      });
     });
   } else {
-    alert('No data available for the selected profile.');
+    alert("No data available for the selected profile.");
   }
 }
 
@@ -715,3 +742,72 @@ function sendEmail() {
     setTimeout(() => URL.revokeObjectURL(fileUrl), 1000);
   });
 }
+
+function addMappingToUI(linkedinField, formFieldName) {
+  const container = document.getElementById("mapping-container");
+
+  const div = document.createElement("div");
+  div.classList.add("mapping-item");
+
+  const mappingText = document.createElement("span");
+  mappingText.textContent = `${linkedinField} → ${formFieldName}`;
+  div.appendChild(mappingText);
+
+  const deleteButton = document.createElement("button");
+  deleteButton.textContent = "❌";
+  deleteButton.classList.add("delete-btn");
+  deleteButton.addEventListener("click", () => {
+      container.removeChild(div);
+      saveMappingsToStorage();
+  });
+  div.appendChild(deleteButton);
+
+  container.appendChild(div);
+
+  saveMappingsToStorage();
+}
+
+function saveMappingsToStorage() {
+  const mappings = Array.from(document.querySelectorAll(".mapping-item span")).map((span) => {
+      const [linkedinField, formFieldName] = span.textContent.split(" → ");
+      return { linkedinField, formFieldName };
+  });
+  chrome.storage.local.set({ fieldMappings: mappings });
+}
+
+function loadMappings() {
+  chrome.storage.local.get(["fieldMappings"], (result) => {
+      const mappingFields = result.fieldMappings || [];
+      mappingFields.forEach(({ linkedinField, formFieldName }) => {
+          addMappingToUI(linkedinField, formFieldName);
+      });
+  });
+}
+
+// Add mapping button logic
+document.getElementById("add-mapping").addEventListener("click", () => {
+  const linkedinField = document.getElementById("linkedin-field").value.trim();
+  const formFieldName = document.getElementById("form-field").value.trim();
+  if (linkedinField && formFieldName) {
+      addMappingToUI(linkedinField, formFieldName);
+      saveMappingsToStorage();
+  }
+});
+
+document.getElementById("auto-fill").addEventListener("click", () => {
+  chrome.storage.local.get(["profiles", "fieldMappings"], (result) => {
+      const profiles = result.profiles || [];
+      const currentProfile = profiles[selectedProfileIndex] || {};
+      const fieldMappings = result.fieldMappings || [];
+
+      // Send autofill message to content script
+      chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+          const activeTab = tabs[0];
+          chrome.tabs.sendMessage(activeTab.id, {
+              action: "applyMappings",
+              fieldMappings,
+              profileData: currentProfile.data,
+          });
+      });
+  });
+});

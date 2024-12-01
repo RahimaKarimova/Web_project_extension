@@ -3,6 +3,7 @@
 
 <head>
   <title>Chrome Auto Filler</title>
+  <meta charset="UTF-8">
   <link rel="stylesheet" href="styles/popup.css">
 </head>
 
@@ -96,6 +97,16 @@
     <button id="send-email">Send via Email</button>
     <button id="open-dashboard">Open Dashboard</button>
   </div>
+
+  <div class="section">
+    <h3>Field Mapping</h3>
+    <div id="mapping-container"></div>
+    <div>
+      <input type="text" id="linkedin-field" placeholder="LinkedIn Field">
+      <input type="text" id="form-field" placeholder="Form Field Name">
+      <button id="add-mapping">Add Mapping</button>
+    </div>
+  </div>  
 
   <!-- Hidden File Input for Import -->
   <input type="file" id="file-input" accept=".json" style="display: none;">

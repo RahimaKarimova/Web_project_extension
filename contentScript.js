@@ -387,3 +387,108 @@ function fillForm(data) {
     }
   });
 }
+
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+  if (message.action === "autoFill") {
+    const { data, fieldMappings } = message;
+
+    // Helper to format values
+    const formatValue = (value) => {
+      if (Array.isArray(value)) {
+        if (value.every((item) => typeof item === "object" && item !== null)) {
+          return value
+            .map((item) =>
+              Object.entries(item)
+                .map(([key, val]) => `${key}: ${val}`)
+                .join(", ")
+            )
+            .join("\n");
+        }
+        // Handle simple arrays (e.g., skills)
+        return value.join(", ");
+      } else if (typeof value === "object" && value !== null) {
+        // Handle single objects
+        return JSON.stringify(value);
+      }
+      return value;
+    };
+
+    // Apply field mappings to the form
+    fieldMappings.forEach(({ linkedinField, formFieldName }) => {
+      const fieldValue = data[linkedinField];
+      if (fieldValue !== undefined) {
+        const formattedValue = formatValue(fieldValue);
+        const formField = document.querySelector(`[name="${formFieldName}"]`);
+        if (formField) {
+          formField.value = formattedValue;
+        } else {
+          console.warn(`Form field "${formFieldName}" not found.`);
+        }
+      } else {
+        console.warn(`LinkedIn field "${linkedinField}" not found in data.`);
+      }
+    });
+
+    // Fill fields without mappings by matching names
+    Object.entries(data).forEach(([key, value]) => {
+      const formField = document.querySelector(`[name="${key}"]`);
+      if (
+        formField &&
+        !fieldMappings.some((mapping) => mapping.formFieldName === key)
+      ) {
+        const formattedValue = formatValue(value);
+        formField.value = formattedValue;
+      }
+    });
+
+    sendResponse({ status: "Form autofill completed successfully." });
+  }
+});
+
+// Helper to find form fields using various attributes
+const findFormField = (formFieldName) => {
+  return (
+    document.querySelector(`[name="${formFieldName}"]`) ||
+    document.querySelector(`[id="${formFieldName}"]`) ||
+    document.querySelector(`[aria-label="${formFieldName}"]`) ||
+    Array.from(document.querySelectorAll("input, textarea, select")).find(
+      (field) => field.placeholder === formFieldName
+    )
+  );
+};
+
+// Apply mappings from LinkedIn fields to form fields
+function applyMappingsToForm(mappings, linkedinData) {
+  mappings.forEach(({ linkedinField, formFieldName }) => {
+    const linkedInFieldData = linkedinData[linkedinField];
+    if (linkedInFieldData !== undefined) {
+      const formattedValue = formatValue(linkedInFieldData);
+      const formField = findFormField(formFieldName);
+
+      if (formField) {
+        formField.value = formattedValue;
+        formField.dispatchEvent(new Event("input"));
+      } else {
+        console.warn(`Form field "${formFieldName}" not found.`);
+      }
+    } else {
+      console.warn(`LinkedIn field "${linkedinField}" not found in data.`);
+    }
+  });
+
+  linkedinData.forEach(({ key, value }) => {
+    const formField = findFormField(key);
+    if (formField) {
+      formField.value = formatValue(value);
+      formField.dispatchEvent(new Event("input"));
+    }
+  });
+}
+
+// Listen for messages from popup.js
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+  if (message.action === "applyMappings") {
+      const { fieldMappings, profileData } = message;
+      applyMappingsToForm(fieldMappings, profileData);
+  }
+});
