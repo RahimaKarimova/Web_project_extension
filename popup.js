@@ -811,3 +811,113 @@ document.getElementById("auto-fill").addEventListener("click", () => {
       });
   });
 });
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('save-form-data').addEventListener('click', saveCurrentFormData);
+  document.getElementById('load-form-data').addEventListener('click', loadFormDataForCurrentPage);
+});
+
+/**
+ * Save form data from the active page
+ */
+function saveCurrentFormData() {
+  chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+    const activeTab = tabs[0];
+
+    chrome.scripting.executeScript(
+      {
+        target: { tabId: activeTab.id },
+        func: extractFormData,
+      },
+      (results) => {
+        if (chrome.runtime.lastError) {
+          alert('Error extracting form data: ' + chrome.runtime.lastError.message);
+          return;
+        }
+
+        const formData = results[0]?.result;
+        if (!formData || Object.keys(formData).length === 0) {
+          alert('No form data found on this page.');
+          return;
+        }
+
+        // Save the form data with the page URL
+        chrome.storage.local.get(['formHistory'], (result) => {
+          const history = result.formHistory || [];
+          history.push({
+            url: activeTab.url,
+            formData,
+            timestamp: new Date().toISOString()
+          });
+          chrome.storage.local.set({ formHistory: history }, () => {
+            alert('Form data saved successfully.');
+          });
+        });
+      }
+    );
+  });
+}
+
+/**
+ * Extracts form data from the active page
+ */
+function extractFormData() {
+  const formData = {};
+  const inputs = document.querySelectorAll('input, textarea, select');
+
+  inputs.forEach((input) => {
+    const name = input.name || input.id || input.placeholder || `field_${Math.random().toString(36).substr(2, 5)}`;
+    formData[name] = input.value;
+  });
+
+  return formData;
+}
+
+/**
+ * Load saved form data for the current page and autofill the form
+ */
+function loadFormDataForCurrentPage() {
+  chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+    const activeTab = tabs[0];
+
+    chrome.storage.local.get(['formHistory'], (result) => {
+      const history = result.formHistory || [];
+      const savedForm = history.find((entry) => entry.url === activeTab.url);
+
+      if (!savedForm) {
+        alert('No saved form data found for this page.');
+        return;
+      }
+
+      // Autofill the form with the saved data
+      chrome.scripting.executeScript(
+        {
+          target: { tabId: activeTab.id },
+          func: autofillForm,
+          args: [savedForm.formData],
+        },
+        () => {
+          if (chrome.runtime.lastError) {
+            alert('Error autofilling form: ' + chrome.runtime.lastError.message);
+          } else {
+            alert('Form data loaded successfully.');
+          }
+        }
+      );
+    });
+  });
+}
+
+/**
+ * Autofill a form with provided data
+ */
+function autofillForm(data) {
+  const inputs = document.querySelectorAll('input, textarea, select');
+
+  inputs.forEach((input) => {
+    const name = input.name || input.id || input.placeholder;
+    if (name && data[name] !== undefined) {
+      input.value = data[name];
+      input.dispatchEvent(new Event('input', { bubbles: true })); // Trigger change event
+    }
+  });
+}

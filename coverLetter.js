@@ -10,7 +10,7 @@ async function createCoverLetter(data, companyName, jobTitle) {
     document.getElementById('cover-letter').value = "Generating cover letter... Please wait.";
 
     // Create the prompt for the API request, including applicant's background
-    const prompt = `Write a professional cover letter for the position of ${jobTitle} at ${companyName}.
+    const prompt = `Write a professional, concise cover letter for the position of ${jobTitle} at ${companyName}.
 
 Applicant's Background:
 - Name: ${data.name || 'Your Name'}
@@ -37,7 +37,7 @@ Include why you are interested in the position and how your background makes you
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'x-rapidapi-key': '2e14a5280bmshb9245ca4b8d504ap18c3a2jsn8611ed6d7c70', // Replace with your RapidAPI key
+                'x-rapidapi-key': 'f61635aef3msh295b285ae83ce67p108238jsnd13e88df6030', // Replace with your RapidAPI key
                 'x-rapidapi-host': 'google-gemma-2.p.rapidapi.com',
             },
             body: dataToSend,

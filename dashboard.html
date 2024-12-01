@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,6 +10,7 @@
     .hidden {
       display: none;
     }
+
     .modal-content {
       background: #fff;
       padding: 20px;
@@ -17,11 +19,14 @@
     }
   </style>
 </head>
+
 <body>
   <header>
     <h1>Job Application Tracker</h1>
   </header>
   <main>
+    <!-- Applications Section -->
+    <h2>Applications</h2>
     <table id="application-table">
       <thead>
         <tr>
@@ -39,7 +44,7 @@
     <button id="add-entry-btn">Add Application</button>
   </main>
 
-  <!-- Modal for adding/updating applications -->
+  <!-- Modal for Adding/Editing Applications -->
   <div id="modal" class="hidden">
     <div class="modal-content">
       <h2 id="modal-title">Add Application</h2>
@@ -54,6 +59,7 @@
 
       <label for="status">Status:</label>
       <select id="status">
+        <option value="Pending">Pending</option>
         <option value="Interviewed">Interviewed</option>
         <option value="Rejected">Rejected</option>
         <option value="Accepted">Accepted</option>
@@ -63,6 +69,33 @@
       <button id="cancel-btn">Cancel</button>
     </div>
   </div>
+
+  <!-- History Section -->
+  <div class="section">
+    <h2>Saved Form History</h2>
+    <button id="view-history-btn">View History</button>
+    <div id="history-modal" class="hidden">
+      <div class="modal-content">
+        <h2>Saved History</h2>
+        <button class="close-btn" onclick="document.getElementById('history-modal').classList.add('hidden')">Close</button>
+        <table id="history-table" border="1">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Form URL</th>
+              <th>Data</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- Dynamic history content will be injected here -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
   <script src="dashboard.js"></script>
 </body>
+
 </html>

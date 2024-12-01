@@ -271,3 +271,11 @@ button#add-mapping:hover {
 .mapping-item button:hover {
   background-color: #c0392b;
 }
+.history {
+  margin-top: 20px;
+}
+
+.history button {
+  margin-bottom: 10px;
+  padding: 10px 20px;
+}
