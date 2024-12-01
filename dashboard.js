@@ -1,3 +1,6 @@
+    // *Reference*: MDN Web Docs
+    // *Topic*: DOMContentLoaded event
+    // *URL*: https://developer.mozilla.org/en-US/docs/Web/API/Document/DOMContentLoaded_event
 document.addEventListener('DOMContentLoaded', () => {
     const addEntryBtn = document.getElementById('add-entry-btn');
     const modal = document.getElementById('modal');
@@ -11,6 +14,9 @@ document.addEventListener('DOMContentLoaded', () => {
     let applications = [];
     let editIndex = -1; // Keep track of the entry being edited
 
+    // *Reference*: Chrome Developers
+    // *Topic*: chrome.storage API
+    // *URL*: https://developer.chrome.com/docs/extensions/reference/storage
     // Load data from storage for applications
     chrome.storage.local.get(['applications'], (result) => {
         applications = result.applications || [];
@@ -150,6 +156,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    // OpenAI. (2024, December 1). ChatGPT (v4). Prompt: "How to toggle visibility of a modal in JavaScript using classes?"
     // Show or hide the history modal
     viewHistoryBtn.addEventListener('click', () => {
         historyModal.classList.toggle('hidden');

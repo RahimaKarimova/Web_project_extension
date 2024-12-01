@@ -4,6 +4,8 @@ let selectedProfileIndex = 0;
 // Initialize an array to hold custom fields
 let customFields = [];
 
+
+// OpenAI. (2024, December 1). ChatGPT (v4). Prompt: "How to use DOMContentLoaded to initialize JavaScript functionality in a Chrome extension?"
 // Load profiles when the popup is opened
 document.addEventListener('DOMContentLoaded', () => {
   loadProfiles();
@@ -32,6 +34,9 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('extract-data').addEventListener('click', extractData);
   document.getElementById('send-email').addEventListener('click', sendEmail);
 
+  // Reference: MDN Web Docs
+  // Topic: chrome.tabs.create()
+  // URL: https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/tabs/create
   // Add Open Dashboard button listener
   document.getElementById('open-dashboard').addEventListener('click', () => {
     chrome.tabs.create({ url: chrome.runtime.getURL('dashboard.html') });
@@ -45,6 +50,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const companyName = document.getElementById('company-name').value.trim();
     const jobTitle = document.getElementById('job-title').value.trim();
 
+    
+    // OpenAI. (2024, November 10). ChatGPT (v4). Prompt: "How to implement a generate cover letter button in a Chrome extension?"
     // Call the createCoverLetter function
     createCoverLetter(data, companyName, jobTitle);
   });
@@ -54,6 +61,9 @@ document.addEventListener('DOMContentLoaded', () => {
     chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
       const tabId = tabs[0].id;
 
+      // Reference: GeeksforGeeks
+      // Topic: Using chrome.scripting.executeScript
+      // URL: https://www.geeksforgeeks.org/how-to-use-chrome-scripting-executescript-method/
       chrome.scripting.executeScript(
         {
           target: { tabId: tabId },
@@ -78,6 +88,7 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
           }
 
+          // OpenAI. (2024, November 19). ChatGPT (v4). Prompt: "How to populate input fields dynamically in a Chrome extension popup?"
           // Populate the input fields in the popup
           if (jobTitle) {
             document.getElementById('job-title').value = jobTitle;
@@ -101,6 +112,9 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 });
 
+// Reference: W3Schools
+// Topic: Creating and appending HTML elements using JavaScript
+// URL: https://www.w3schools.com/js/js_htmldom_nodes.asp
 // Function to add a custom field to the popup
 function addCustomField(key = '', value = '') {
   const container = document.getElementById('custom-fields-container');
@@ -133,6 +147,7 @@ function addCustomField(key = '', value = '') {
   customFields.push(div);
 }
 
+// OpenAI. (2024, November 20). ChatGPT (v4). Prompt: "How to use chrome.storage.local.get to retrieve data in JavaScript?"
 // Function to load profiles from storage
 function loadProfiles() {
   chrome.storage.local.get(['profiles'], (result) => {
@@ -399,6 +414,7 @@ function parseTextToArray(input, delimiter) {
   }).filter(item => Object.values(item).some(value => value));
 }
 
+// OpenAI. (2024, November 22). ChatGPT (v4). Prompt: "How to display a temporary success message using JavaScript?"
 // Function to display a temporary message
 function showMessage(message) {
   const existingMessage = document.querySelector('.message');
@@ -910,6 +926,9 @@ function loadFormDataForCurrentPage() {
 /**
  * Autofill a form with provided data
  */
+// Reference: Stack Overflow
+// Topic: Triggering input change events in JavaScript
+// URL: https://stackoverflow.com/questions/2856513/how-can-i-trigger-an-onsomething-change-event
 function autofillForm(data) {
   const inputs = document.querySelectorAll('input, textarea, select');
 

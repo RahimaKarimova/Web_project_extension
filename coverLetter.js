@@ -32,6 +32,9 @@ Include why you are interested in the position and how your background makes you
     });
 
     try {
+        //Reference: MDN Web Docs
+        //Topic: Using Fetch
+        //URL: https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API/Using_Fetch
         // Make the API call using fetch
         const response = await fetch('https://google-gemma-2.p.rapidapi.com/', {
             method: 'POST',
@@ -43,6 +46,7 @@ Include why you are interested in the position and how your background makes you
             body: dataToSend,
         });
 
+        // OpenAI. (2024, November 23). ChatGPT (v4). Prompt: "How to create and download a JSON file in JavaScript using Blob and URL.createObjectURL?"
         if (!response.ok) {
             const errorData = await response.json();
             let errorMessage = 'API request failed';
@@ -52,6 +56,9 @@ Include why you are interested in the position and how your background makes you
             throw new Error(errorMessage);
         }
 
+        //Reference: freeCodeCamp
+        //Topic: JavaScript Fetch API Tutorial with JS Fetch Post and Header Examples
+        //URL: https://www.freecodecamp.org/news/javascript-fetch-api-tutorial-with-js-fetch-post-and-header-examples/
         const json = await response.json();
         if (json && json.choices && json.choices.length > 0) {
             const coverLetter = json.choices[0].message.content.trim();
@@ -60,6 +67,9 @@ Include why you are interested in the position and how your background makes you
             // Save the cover letter to the profile data
             data.coverLetter = coverLetter;
             profiles[selectedProfileIndex].data = data;
+            //Reference: Chrome Developers
+            //Topic: chrome.storage
+            //URL: https://developer.chrome.com/docs/extensions/reference/storage
             chrome.storage.local.set({ profiles: profiles });
             showMessage('Cover letter generated successfully.');
         } else {
