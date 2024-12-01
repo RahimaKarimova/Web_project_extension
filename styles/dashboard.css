@@ -80,7 +80,7 @@ button:focus {
   box-shadow: 0 0 3px rgba(0, 123, 255, 0.5);
 }
 
-/* Secondary Button Styling (make it blue) */
+/* Secondary Button Styling */
 button.secondary {
   background-color: #007bff;
 }
@@ -110,7 +110,7 @@ button.secondary:hover {
   border-radius: 10px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
   width: 90%;
-  max-width: 600px;
+  max-width: 400px;
   z-index: 1000;
   padding: 20px;
 }
@@ -119,27 +119,78 @@ button.secondary:hover {
   margin-top: 0;
   color: #007bff;
   font-size: 1.5rem;
-}
-
-.modal .close-btn {
-  background-color: transparent;
-  color: #333;
-  font-size: 1.2rem;
-  border: none;
-  cursor: pointer;
-  position: absolute;
-  top: 10px;
-  right: 10px;
-}
-
-.modal .close-btn:hover {
-  color: #007bff;
+  text-align: center;
 }
 
 .modal-content {
-  margin-top: 20px;
-  max-height: 400px;
-  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* Form Styling for Vertical Layout */
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+label {
+  font-weight: bold;
+}
+
+input,
+select {
+  padding: 10px;
+  font-size: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  width: 100%;
+}
+
+input:focus,
+select:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+}
+
+.form-actions {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+#save-entry-btn {
+  background-color: #007bff;
+  color: white;
+}
+
+#cancel-btn {
+  background-color: #ccc;
+  color: #333;
+}
+
+/* History Buttons */
+#save-history-btn,
+#load-history-btn {
+  background-color: #28a745;
+  color: #fff;
+  padding: 8px 12px;
+  border-radius: 4px;
+  border: none;
+  cursor: pointer;
+}
+
+#save-history-btn:hover,
+#load-history-btn:hover {
+  background-color: #218838;
 }
 
 /* Responsive Design */
@@ -163,5 +214,10 @@ button.secondary:hover {
     flex-direction: column;
     align-items: flex-start;
   }
-}
 
+  .form-actions {
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+  }
+}
