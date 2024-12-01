@@ -41,7 +41,10 @@
         <!-- Dynamic rows will be inserted here -->
       </tbody>
     </table>
-    <button id="add-entry-btn">Add Application</button>
+    <div class="action-buttons">
+      <button id="add-entry-btn">Add Application</button>
+      <button id="view-history-btn" class="secondary">View History</button>
+    </div>
   </main>
 
   <!-- Modal for Adding/Editing Applications -->
@@ -71,27 +74,23 @@
   </div>
 
   <!-- History Section -->
-  <div class="section">
-    <h2>Saved Form History</h2>
-    <button id="view-history-btn">View History</button>
-    <div id="history-modal" class="hidden">
-      <div class="modal-content">
-        <h2>Saved History</h2>
-        <button class="close-btn" onclick="document.getElementById('history-modal').classList.add('hidden')">Close</button>
-        <table id="history-table" border="1">
-          <thead>
-            <tr>
-              <th>#</th>
-              <th>Form URL</th>
-              <th>Data</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            <!-- Dynamic history content will be injected here -->
-          </tbody>
-        </table>
-      </div>
+  <div id="history-modal" class="hidden">
+    <div class="modal-content">
+      <h2>Saved History</h2>
+      <button class="close-btn" onclick="document.getElementById('history-modal').classList.add('hidden')">Close</button>
+      <table id="history-table" border="1">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Form URL</th>
+            <th>Data</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- Dynamic history content will be injected here -->
+        </tbody>
+      </table>
     </div>
   </div>
 

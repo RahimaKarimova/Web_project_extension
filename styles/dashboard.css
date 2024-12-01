@@ -80,12 +80,20 @@ button:focus {
   box-shadow: 0 0 3px rgba(0, 123, 255, 0.5);
 }
 
+/* Secondary Button Styling (make it blue) */
 button.secondary {
-  background-color: #6c757d;
+  background-color: #007bff;
 }
 
 button.secondary:hover {
-  background-color: #5a6268;
+  background-color: #0056b3;
+}
+
+/* Action Buttons Styling */
+.action-buttons {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
 }
 
 /* Modal Styling */
@@ -150,4 +158,10 @@ button.secondary:hover {
   .modal {
     width: 95%;
   }
+
+  .action-buttons {
+    flex-direction: column;
+    align-items: flex-start;
+  }
 }
+
